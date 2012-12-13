@@ -1,13 +1,11 @@
 HEADERS   = database.h \
-            dialog.h \
             mainwindow.h \
 	    systemwatch.h \
 	    timedelegate.h \
 	    daysmodel.h \
 	    systemwatch_win.h
 RESOURCES = timetable.qrc
-SOURCES   = dialog.cpp \
-            main.cpp \
+SOURCES   = main.cpp \
             mainwindow.cpp \
             systemwatch.cpp \
             timedelegate.cpp \

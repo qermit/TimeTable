@@ -12,13 +12,13 @@
 class WinSystemWatch : public SystemWatch
 {
 public:
-	WinSystemWatch();
-	~WinSystemWatch();
+    WinSystemWatch();
+    ~WinSystemWatch();
 
 private:
-	class MessageWindow;
-	MessageWindow *d;
-	bool processWinEvent(MSG *m, long* result);
+    class MessageWindow;
+    MessageWindow *d;
+    bool processWinEvent(MSG *m, long* result);
 };
 
 #endif

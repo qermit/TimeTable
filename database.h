@@ -1,43 +1,3 @@
-/****************************************************************************
-**
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
-**
-** This file is part of the examples of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:BSD$
-** You may use this file under the terms of the BSD license as follows:
-**
-** "Redistribution and use in source and binary forms, with or without
-** modification, are permitted provided that the following conditions are
-** met:
-**   * Redistributions of source code must retain the above copyright
-**     notice, this list of conditions and the following disclaimer.
-**   * Redistributions in binary form must reproduce the above copyright
-**     notice, this list of conditions and the following disclaimer in
-**     the documentation and/or other materials provided with the
-**     distribution.
-**   * Neither the name of Nokia Corporation and its Subsidiary(-ies) nor
-**     the names of its contributors may be used to endorse or promote
-**     products derived from this software without specific prior written
-**     permission.
-**
-** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #ifndef DATABASE_H
 #define DATABASE_H
 
@@ -51,52 +11,52 @@ static bool createConnection()
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     //db.setDatabaseName(":memory:");
 
-	db = QSqlDatabase::addDatabase("QSQLITE");
-	db.setDatabaseName("timetable.db");
+    db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName("timetable.db");
 
-	if(!QFile::exists("timetable.db")) // Database does not exist yet
-	{
-		if (!db.open()) {
-			QMessageBox::critical(0, qApp->tr("Cannot open database"),
-				qApp->tr("Unable to establish a database connection.\n"
-				"This example needs SQLite support. Please read "
-				"the Qt SQL driver documentation for information how "
-				"to build it.\n\n"
-				"Click Cancel to exit."), QMessageBox::Cancel);
-			return false;
-		}
+    if(!QFile::exists("timetable.db")) // Database does not exist yet
+    {
+        if (!db.open()) {
+            QMessageBox::critical(0, qApp->tr("Cannot open database"),
+                                  qApp->tr("Unable to establish a database connection.\n"
+                                           "This example needs SQLite support. Please read "
+                                           "the Qt SQL driver documentation for information how "
+                                           "to build it.\n\n"
+                                           "Click Cancel to exit."), QMessageBox::Cancel);
+            return false;
+        }
 
-		QSqlQuery query;
+        QSqlQuery query;
 
-		query.exec("create table hours (id int primary key, "
-			"day uint, "
-			"start int, "
-			"end int )");
+        query.exec("create table hours (id int primary key, "
+                   "day uint, "
+                   "start int, "
+                   "end int )");
 
-/*		query.exec("insert into hours values(1, '1325365200', 9, 16)");
-		query.exec("insert into hours values(2, '1325365200', 17, 18)");
-		query.exec("insert into hours values(3, '1325538000', 9, 10)");
-		query.exec("insert into hours values(4, '1325538000', 11, 12)");
-		query.exec("insert into hours values(5, '1325538000', 9, 19)");
-		query.exec("insert into hours values(6, '1325710800', 8, 15)");
-		query.exec("insert into hours values(7, '1325710800', 16, 18)");
-		query.exec("insert into hours values(8, '1325710800', 19, 20)");
+        /*		query.exec("insert into hours values(1, '1325365200', 9, 16)");
+        query.exec("insert into hours values(2, '1325365200', 17, 18)");
+        query.exec("insert into hours values(3, '1325538000', 9, 10)");
+        query.exec("insert into hours values(4, '1325538000', 11, 12)");
+        query.exec("insert into hours values(5, '1325538000', 9, 19)");
+        query.exec("insert into hours values(6, '1325710800', 8, 15)");
+        query.exec("insert into hours values(7, '1325710800', 16, 18)");
+        query.exec("insert into hours values(8, '1325710800', 19, 20)");
 */
-	}
-	else // Database exists. Just open it
-	{
-		if (!db.open()) {
-			QMessageBox::critical(0, qApp->tr("Cannot open database"),
-				qApp->tr("Unable to establish a database connection.\n"
-				"This example needs SQLite support. Please read "
-				"the Qt SQL driver documentation for information how "
-				"to build it.\n\n"
-				"Click Cancel to exit."), QMessageBox::Cancel);
-			return false;
-		}
-	}
+    }
+    else // Database exists. Just open it
+    {
+        if (!db.open()) {
+            QMessageBox::critical(0, qApp->tr("Cannot open database"),
+                                  qApp->tr("Unable to establish a database connection.\n"
+                                           "This example needs SQLite support. Please read "
+                                           "the Qt SQL driver documentation for information how "
+                                           "to build it.\n\n"
+                                           "Click Cancel to exit."), QMessageBox::Cancel);
+            return false;
+        }
+    }
 
-	return true;
+    return true;
 }
 
 #endif

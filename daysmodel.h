@@ -5,16 +5,17 @@
 
 class DaysModel : public QAbstractTableModel
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	DaysModel(QAbstractTableModel& base, QObject *parent);
-	int rowCount(const QModelIndex &parent = QModelIndex()) const ;
-	int columnCount(const QModelIndex &parent = QModelIndex()) const;
-	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+    DaysModel(QAbstractTableModel& base, QObject *parent);
+    int rowCount(const QModelIndex &parent = QModelIndex()) const ;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const;
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+    int calculateHoursPerWeek(QDate date) const;
 private:
-	int calculateHours(QDate date) const;
+    int calculateHours(QDate date) const;
 private:
-	QAbstractTableModel& _base;
+    QAbstractTableModel& _base;
 };
 
 #endif // __DAYS_MODEL__

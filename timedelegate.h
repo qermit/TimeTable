@@ -6,24 +6,24 @@
 class DateFormatDelegate : public QStyledItemDelegate
 {
 public:
-	DateFormatDelegate (QString dateFormat, QObject *parent);
+    DateFormatDelegate (QString dateFormat, QObject *parent);
 
-	virtual QString displayText(const QVariant & value, const QLocale & locale ) const;
+    virtual QString displayText(const QVariant & value, const QLocale & locale ) const;
 
 private:
-	QString m_dateFormat;
+    QString m_dateFormat;
 };
 
 
 class TimeFormatDelegate : public QStyledItemDelegate
 {
 public:
-	TimeFormatDelegate (QString timeFormat, QObject *parent);
+    TimeFormatDelegate (QString timeFormat, QObject *parent);
 
-	virtual QString displayText(const QVariant & value, const QLocale & locale ) const;
+    virtual QString displayText(const QVariant & value, const QLocale & locale ) const;
 
 private:
-	QString m_timeFormat;
+    QString m_timeFormat;
 };
 
 #endif // TIMEDELEGATE_H
