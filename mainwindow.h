@@ -5,6 +5,7 @@
 #include <QMainWindow>
 #include <QModelIndex>
 #include <qcoreevent.h>
+#include <QSystemTrayIcon>
 
 QT_BEGIN_NAMESPACE
 class QFile;
@@ -36,7 +37,11 @@ private slots:
     void changeDate(QModelIndex index);
     void changeDate(const QDate& date);
     void updateHeader(QModelIndex, int, int);
+    void iconActivated(QSystemTrayIcon::ActivationReason reason);
+
 private:
+    void createActions();
+    void createTrayIcon();
     void adjustHeader();
     QGroupBox *createDetailsGroupBox();
     QGroupBox *createDaysGroupBox();
@@ -47,15 +52,21 @@ private:
     void finalizeLastRecord();
     void updateDetails(const QDate& date);
     void updateWeekHours(const QDate& date);
-
+    void changeEvent(QEvent* e);
 private:
     int _newRecordId;
     QTableView* _detailsView;
     QCalendarWidget* _calendar;
     QTableView* _hoursView;
     QLabel*     _hoursPerWeek;
+    QLabel*     _hoursPerDay;
     QSqlRelationalTableModel* _model;
     DaysModel* _daysModel;
+    QAction *_restoreAction;
+    QAction *_quitAction;
+    QSystemTrayIcon *trayIcon;
+    QMenu *trayIconMenu;
+    //QPushButton *_closeButton;
 };
 
 #endif

@@ -29,19 +29,10 @@ static bool createConnection()
         QSqlQuery query;
 
         query.exec("create table hours (id int primary key, "
+                   "week int, "
                    "day uint, "
                    "start int, "
                    "end int )");
-
-        /*		query.exec("insert into hours values(1, '1325365200', 9, 16)");
-        query.exec("insert into hours values(2, '1325365200', 17, 18)");
-        query.exec("insert into hours values(3, '1325538000', 9, 10)");
-        query.exec("insert into hours values(4, '1325538000', 11, 12)");
-        query.exec("insert into hours values(5, '1325538000', 9, 19)");
-        query.exec("insert into hours values(6, '1325710800', 8, 15)");
-        query.exec("insert into hours values(7, '1325710800', 16, 18)");
-        query.exec("insert into hours values(8, '1325710800', 19, 20)");
-*/
     }
     else // Database exists. Just open it
     {

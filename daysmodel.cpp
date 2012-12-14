@@ -96,22 +96,22 @@ int DaysModel::calculateHours(QDate date) const
 
 int DaysModel::calculateHoursPerWeek(QDate date) const
 {
-    int res = date.weekNumber();
-
-    /*    QSqlRelationalTableModel& model = (QSqlRelationalTableModel&)_base;
-    int count = model.rowCount();
-    model.setFilter("day <= '1355169600'");
+    int res = 0;
+    QSqlRelationalTableModel& model = (QSqlRelationalTableModel&)_base;
+    QString currFilter = model.filter();
+    model.setFilter("week = '" + QString::number(date.weekNumber(), 10) + "'");
     model.select();
-    count = model.rowCount();
-    if(model.select())
+    int count = model.rowCount();
+    for(int i=0; i<count; i++)
     {
-        while (model.query().next())
+        QSqlRecord record =  model.record(i);
+        if(record.value("end").toUInt() > 0)
         {
-            int id = model.query().value(0).toInt();
-            int year = model.query().value(1).toInt();
-            qDebug() << id << " " << year << '\n';
+            uint diff = record.value("end").toUInt() - record.value("start").toUInt();
+            res+=diff;
         }
     }
-*/
+
+    model.setFilter(currFilter);
     return res;
 }

@@ -10,6 +10,8 @@
 MainWindow::MainWindow(const QString &hourTable, QWidget *parent)
     : QMainWindow(parent)
 {
+    setWindowFlags( Qt::CustomizeWindowHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint );
+
     _model = new QSqlRelationalTableModel(this);
     _model->setTable(hourTable);
     _model->select();
@@ -43,6 +45,18 @@ MainWindow::MainWindow(const QString &hourTable, QWidget *parent)
     resize(850, 400);
     setWindowTitle(tr("Timetable"));
 
+    createActions();
+    createTrayIcon();
+
+    QIcon icon = QIcon(":images/timetable_icon.png");
+    trayIcon->setIcon(icon);
+    setWindowIcon(icon);
+
+    trayIcon->show();
+
+    connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
+          this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
+
     // Connect to the system monitor
     SystemWatch* sw = SystemWatch::instance();
     connect(sw, SIGNAL(sleep()), this, SLOT(doSleep()));
@@ -59,11 +73,66 @@ MainWindow::~MainWindow()
     delete _model;
 }
 
+void MainWindow::createTrayIcon()
+{
+    trayIconMenu = new QMenu(this);
+    trayIconMenu->addAction(_restoreAction);
+    trayIconMenu->addSeparator();
+    trayIconMenu->addAction(_quitAction);
+
+    trayIcon = new QSystemTrayIcon(this);
+    trayIcon->setContextMenu(trayIconMenu);
+}
+
+void MainWindow::createActions()
+{
+    _restoreAction = new QAction(tr("&Restore"), this);
+    connect(_restoreAction, SIGNAL(triggered()), this, SLOT(showNormal()));
+
+    _quitAction = new QAction(tr("&Quit"), this);
+    connect(_quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+}
+
+void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
+{
+    switch (reason)
+    {
+    case QSystemTrayIcon::MiddleClick:
+        //showMessage();
+        break;
+    case QSystemTrayIcon::Trigger:
+    case QSystemTrayIcon::DoubleClick:
+        showNormal();
+        break;
+    default:
+        break;
+    }
+}
+
+void MainWindow::changeEvent(QEvent* e)
+{
+    switch (e->type())
+    {
+    case QEvent::WindowStateChange:
+    {
+        if (this->windowState() & Qt::WindowMinimized)
+        {
+            QTimer::singleShot(250, this, SLOT(hide()));
+        }
+        break;
+    }
+    default:
+        break;
+    }
+
+    QMainWindow::changeEvent(e);
+}
+
 void MainWindow::changeDate(int row)
 {
     if (row > 0)
     {
-        QModelIndex index = _model->relationModel(1)->index(row, 1);
+        QModelIndex index = _model->relationModel(2)->index(row, 1);
         _model->setFilter("day = '" + index.data().toString() + '\'') ;
     }
     else if (row == 0)
@@ -89,7 +158,7 @@ void MainWindow::changeDate(const QDate& date)
 
     QModelIndex index = _daysModel->index(date.dayOfYear() - 1, 0);
     QItemSelectionModel* selModel = _hoursView->selectionModel();
-    selModel->select(index, QItemSelectionModel::ClearAndSelect);
+    selModel->select(index, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
 
     updateWeekHours(date);
 }
@@ -127,9 +196,10 @@ QGroupBox* MainWindow::createDetailsGroupBox()
     _detailsView->setAlternatingRowColors(true);
     _detailsView->setModel(_model);
     adjustHeader();
-    _detailsView->setItemDelegateForColumn(1, new DateFormatDelegate("dd.MM.yyyy", this));
-    _detailsView->setItemDelegateForColumn(2, new TimeFormatDelegate("hh:mm", this));
+    _detailsView->setItemDelegateForColumn(2, new DateFormatDelegate("dd.MM.yyyy", this));
     _detailsView->setItemDelegateForColumn(3, new TimeFormatDelegate("hh:mm", this));
+    _detailsView->setItemDelegateForColumn(4, new TimeFormatDelegate("hh:mm", this));
+    _detailsView->horizontalHeader()->setResizeMode(2, QHeaderView::Stretch);
 
     QLocale locale = _detailsView->locale();
     locale.setNumberOptions(QLocale::OmitGroupSeparator);
@@ -140,8 +210,11 @@ QGroupBox* MainWindow::createDetailsGroupBox()
     connect(_detailsView, SIGNAL(activated(QModelIndex)),
             this, SLOT(showAlbumDetails(QModelIndex)));
 
-    QVBoxLayout *layout = new QVBoxLayout;
+    _hoursPerDay = new QLabel();
+
+    QGridLayout* layout = new QGridLayout;
     layout->addWidget(_detailsView, 0, 0);
+    layout->addWidget(_hoursPerDay, 1, 0, Qt::AlignRight);
     box->setLayout(layout);
 
     return box;
@@ -158,7 +231,6 @@ QGroupBox* MainWindow::createHoursGroupBox()
     _hoursView->verticalHeader()->hide();
     _hoursView->setAlternatingRowColors(true);
     _hoursView->setModel(_daysModel);
-    //hoursView->hideColumn(0);
     _hoursView->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
     _hoursView->resizeColumnToContents(1);
 
@@ -212,10 +284,11 @@ void MainWindow::updateHeader(QModelIndex, int, int)
 
 void MainWindow::adjustHeader()
 {
-    //detailsView->hideColumn(0);
-    _detailsView->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
-    _detailsView->resizeColumnToContents(2);
+    _detailsView->hideColumn(1);
+    _detailsView->horizontalHeader()->setResizeMode(2, QHeaderView::Stretch);
+    _detailsView->resizeColumnToContents(0);
     _detailsView->resizeColumnToContents(3);
+    _detailsView->resizeColumnToContents(4);
 }
 
 void MainWindow::about()
@@ -233,17 +306,11 @@ void MainWindow::about()
 
 void MainWindow::doSleep()
 {
-    QString log = QDateTime::currentDateTime().toString();
-    qDebug() <<"sleep";
-    qDebug() <<log;
     finalizeLastRecord();
 }
 
 void MainWindow::doWakeup()
 {
-    QString log = QDateTime::currentDateTime().toString();
-    qDebug() <<"wakeup";
-    qDebug() <<log;
     addNewRecord();
 }
 
@@ -253,19 +320,22 @@ int MainWindow::addNewRecord()
     QSqlRecord record;
 
     QSqlField f1("id", QVariant::Int);
-    QSqlField f2("day", QVariant::UInt);
-    QSqlField f3("start", QVariant::Int);
-    QSqlField f4("end", QVariant::Int);
+    QSqlField f2("week", QVariant::Int);
+    QSqlField f3("day", QVariant::UInt);
+    QSqlField f4("start", QVariant::Int);
+    QSqlField f5("end", QVariant::Int);
 
     f1.setValue(QVariant(id));
     QDateTime currentDate = QDateTime(QDate::currentDate());
-    f2.setValue(QVariant(currentDate.toTime_t()));
-    f3.setValue(QVariant(QDateTime::currentDateTime().toTime_t()));
-    f4.setValue(QVariant(0));
+    f2.setValue(QVariant(QDate::currentDate().weekNumber()));
+    f3.setValue(QVariant(currentDate.toTime_t()));
+    f4.setValue(QVariant(QDateTime::currentDateTime().toTime_t()));
+    f5.setValue(QVariant(0));
     record.append(f1);
     record.append(f2);
     record.append(f3);
     record.append(f4);
+    record.append(f5);
 
     _model->insertRecord(-1, record);
 
@@ -312,7 +382,8 @@ int MainWindow::generateRecordId()
 void MainWindow::updateWeekHours(const QDate& date)
 {
     QString hpwText = tr("Worked per week: ");
-    hpwText += QString::number(_daysModel->calculateHoursPerWeek(date), 10);
+    int seconds = _daysModel->calculateHoursPerWeek(date);
+    hpwText += QString::fromAscii("%1:%2").arg(seconds/3600).arg(seconds/60);
     _hoursPerWeek->setText(hpwText);
 }
 
@@ -320,5 +391,9 @@ void MainWindow::updateDetails(const QDate& date)
 {
     QDateTime dt(date);
     QString filter = QString::number(dt.toTime_t(), 10);
+    int count = _model->rowCount();
     _model->setFilter("day = '" + filter + "'");
+
+    QModelIndex index = _daysModel->index(date.dayOfYear() - 1, 1);
+    _hoursPerDay->setText(tr("Worked per day: ") + _daysModel->data(index).toString());
 }
