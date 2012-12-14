@@ -64,8 +64,6 @@ public:
     //    MyPrototype2 WTSRS;
 };
 
-
-
 WinSystemWatch::WinSystemWatch() 
 {
     d = new MessageWindow(this);

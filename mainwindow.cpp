@@ -10,7 +10,6 @@
 MainWindow::MainWindow(const QString &hourTable, QWidget *parent)
     : QMainWindow(parent)
 {
-    _newRecordId = 0;
     _model = new QSqlRelationalTableModel(this);
     _model->setTable(hourTable);
     _model->select();
@@ -20,6 +19,9 @@ MainWindow::MainWindow(const QString &hourTable, QWidget *parent)
     QGroupBox *days = createDaysGroupBox();
     QGroupBox *hours = createHoursGroupBox();
     QGroupBox *details = createDetailsGroupBox();
+
+    changeDate(QDate::currentDate());
+    _newRecordId = _model->rowCount();
 
     connect(_model, SIGNAL(rowsInserted(QModelIndex,int,int)),
             this, SLOT(updateHeader(QModelIndex,int,int)));
@@ -45,10 +47,14 @@ MainWindow::MainWindow(const QString &hourTable, QWidget *parent)
     SystemWatch* sw = SystemWatch::instance();
     connect(sw, SIGNAL(sleep()), this, SLOT(doSleep()));
     connect(sw, SIGNAL(wakeup()), this, SLOT(doWakeup()));
+
+    addNewRecord();
 }
 
 MainWindow::~MainWindow()
 {
+    finalizeLastRecord();
+
     delete _daysModel;
     delete _model;
 }

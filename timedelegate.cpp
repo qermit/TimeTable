@@ -21,6 +21,11 @@ TimeFormatDelegate::TimeFormatDelegate (QString timeFormat, QObject *parent = 0)
 QString TimeFormatDelegate::displayText(const QVariant & value, const QLocale & locale ) const
 {
     Q_UNUSED(locale);
-    QDateTime date(QDateTime::fromTime_t(value.toUInt()));
-    return date.toString(m_timeFormat);
+    QString res = QString("");
+    if(value.toUInt() != 0)
+    {
+        QDateTime date(QDateTime::fromTime_t(value.toUInt()));
+        res = date.toString(m_timeFormat);
+    }
+    return res;
 }
