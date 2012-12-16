@@ -293,15 +293,13 @@ void MainWindow::adjustHeader()
 
 void MainWindow::about()
 {
-    QMessageBox::about(this, tr("About Music Archive"),
-                       tr("<p>The <b>Music Archive</b> example shows how to present "
-                          "data from different data sources in the same application. "
-                          "The album titles, and the corresponding artists and release dates, "
-                          "are kept in a database, while each album's tracks are stored "
-                          "in an XML file. </p><p>The example also shows how to add as "
-                          "well as remove data from both the database and the "
-                          "associated XML file using the API provided by the QtSql and "
-                          "QtXml modules, respectively.</p>"));
+    //! @todo Update dialog with some additional info, and remove note about missing reports
+    QMessageBox::about(this, tr("Timetable"),
+                       tr("<p>The <b>Timetable</b> is a small tool allowing to count "
+                          "time of your PC activity (could be used as working time counter)."
+                          "The collected data are kept in a database</p>"
+                          "<p>The tool also provides time reports which are useful for tracking work time during"
+                          " a week/month/year. <i>Maybe not right now, but definitely will ;)</i> </p>"));
 }
 
 void MainWindow::doSleep()
