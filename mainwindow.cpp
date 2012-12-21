@@ -381,7 +381,7 @@ void MainWindow::updateWeekHours(const QDate& date)
 {
     QString hpwText = tr("Worked per week: ");
     int seconds = _daysModel->calculateHoursPerWeek(date);
-    hpwText += QString::fromAscii("%1:%2").arg(seconds/3600).arg(seconds/60);
+    hpwText += QString::fromAscii("%1:%2").arg(seconds/3600).arg((seconds%3600)/60);
     _hoursPerWeek->setText(hpwText);
 }
 

@@ -42,7 +42,7 @@ QVariant DaysModel::data(const QModelIndex &index, int role) const
         else
         {
             int seconds = calculateHours(date);
-            return QString::fromAscii("%1:%2").arg(seconds/3600).arg(seconds/60);
+            return QString::fromAscii("%1:%2").arg(seconds/3600).arg((seconds%3600)/60);
         }
     }
 
