@@ -14,16 +14,16 @@ MainWindow::MainWindow(const QString &hourTable, QWidget *parent)
 
     _model = new QSqlRelationalTableModel(this);
     _model->setTable(hourTable);
+    _model->setFilter("");
     _model->select();
+    _newRecordId = _model->rowCount();
 
     _daysModel = new DaysModel(*_model, this);
 
     QGroupBox *days = createDaysGroupBox();
-    QGroupBox *hours = createHoursGroupBox();
     QGroupBox *details = createDetailsGroupBox();
 
     changeDate(QDate::currentDate());
-    _newRecordId = _model->rowCount();
 
     connect(_model, SIGNAL(rowsInserted(QModelIndex,int,int)),
             this, SLOT(updateHeader(QModelIndex,int,int)));
@@ -32,17 +32,15 @@ MainWindow::MainWindow(const QString &hourTable, QWidget *parent)
 
     QGridLayout *layout = new QGridLayout;
     layout->addWidget(days, 0, 0);
-    layout->addWidget(details, 0, 1, 2, 1);
-    layout->addWidget(hours, 1, 0);
-    layout->setColumnStretch(1, 1);
-    layout->setColumnMinimumWidth(0, 300);
+    layout->addWidget(details, 1, 0);
+    layout->setColumnStretch(0, 1);
 
     QWidget *widget = new QWidget;
     widget->setLayout(layout);
     setCentralWidget(widget);
     createMenuBar();
 
-    resize(850, 400);
+    resize(350, 500);
     setWindowTitle(tr("Timetable"));
 
     createActions();
@@ -156,10 +154,6 @@ void MainWindow::changeDate(const QDate& date)
 {
     updateDetails(date);
 
-    QModelIndex index = _daysModel->index(date.dayOfYear() - 1, 0);
-    QItemSelectionModel* selModel = _hoursView->selectionModel();
-    selModel->select(index, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
-
     updateWeekHours(date);
 }
 
@@ -173,11 +167,16 @@ QGroupBox* MainWindow::createDaysGroupBox()
     connect(_calendar, SIGNAL(clicked(const QDate&)),
             this, SLOT(changeDate(const QDate&)));
 
+    _hoursPerWeek = new QLabel();
+    updateWeekHours(QDate::currentDate());
+
     QGroupBox *box = new QGroupBox(tr("Days"));
 
     QGridLayout *layout = new QGridLayout;
     layout->addWidget(_calendar, 0, 0);
+    layout->addWidget(_hoursPerWeek, 1, 0, Qt::AlignRight);
     box->setLayout(layout);
+    box->resize(50, 50);
 
     return box;
 }
@@ -285,8 +284,14 @@ void MainWindow::updateHeader(QModelIndex, int, int)
 void MainWindow::adjustHeader()
 {
     _detailsView->hideColumn(1);
-    _detailsView->horizontalHeader()->setResizeMode(2, QHeaderView::Stretch);
+    _detailsView->horizontalHeader()->setResizeMode(4, QHeaderView::Stretch);
+    _detailsView->horizontalHeader()->model()->setHeaderData(0, Qt::Horizontal, tr("Id"));
+    _detailsView->horizontalHeader()->model()->setHeaderData(2, Qt::Horizontal, tr("Date"));
+    _detailsView->horizontalHeader()->model()->setHeaderData(3, Qt::Horizontal, tr("Start"));
+    _detailsView->horizontalHeader()->model()->setHeaderData(4, Qt::Horizontal, tr("End"));
+
     _detailsView->resizeColumnToContents(0);
+    _detailsView->resizeColumnToContents(2);
     _detailsView->resizeColumnToContents(3);
     _detailsView->resizeColumnToContents(4);
 }
@@ -326,8 +331,8 @@ int MainWindow::addNewRecord()
     f1.setValue(QVariant(id));
     QDateTime currentDate = QDateTime(QDate::currentDate());
     f2.setValue(QVariant(QDate::currentDate().weekNumber()));
-    f3.setValue(QVariant(currentDate.toTime_t()));
-    f4.setValue(QVariant(QDateTime::currentDateTime().toTime_t()));
+    f3.setValue(QVariant(currentDate.toUTC().toTime_t()));
+    f4.setValue(QVariant(QDateTime::currentDateTime().toUTC().toTime_t()));
     f5.setValue(QVariant(0));
     record.append(f1);
     record.append(f2);
@@ -335,7 +340,7 @@ int MainWindow::addNewRecord()
     record.append(f4);
     record.append(f5);
 
-    _model->insertRecord(-1, record);
+    bool res = _model->insertRecord(-1, record);
 
     return id;
 }
@@ -346,12 +351,12 @@ void MainWindow::finalizeLastRecord()
     for (int i = _model->rowCount()-1; i >=0 ; i--)
     {
         QSqlRecord record =  _model->record(i);
-        if (record.value("day") == currentDate.toTime_t())
+        if (record.value("day") == currentDate.toUTC().toTime_t())
         {
             QString val = record.value("end").toString();
             if(val == "0")
             {
-                record.setValue("end", QDateTime::currentDateTime().toTime_t());
+                record.setValue("end", QDateTime::currentDateTime().toUTC().toTime_t());
                 val = record.value("end").toString();
                 //model->setRecord(i, record);
                 _model->removeRow(i);
@@ -364,7 +369,7 @@ void MainWindow::finalizeLastRecord()
     for (int i = 0; i < _model->rowCount(); i++)
     {
         QSqlRecord record =  _model->record(i);
-        if (record.value("day") == currentDate.toTime_t())
+        if (record.value("day") == currentDate.toUTC().toTime_t())
         {
             QString val = record.value("end").toString();
             qDebug() <<i<<val;
@@ -388,7 +393,7 @@ void MainWindow::updateWeekHours(const QDate& date)
 void MainWindow::updateDetails(const QDate& date)
 {
     QDateTime dt(date);
-    QString filter = QString::number(dt.toTime_t(), 10);
+    QString filter = QString::number(dt.toUTC().toTime_t(), 10);
     int count = _model->rowCount();
     _model->setFilter("day = '" + filter + "'");
 

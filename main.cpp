@@ -12,6 +12,16 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
 
+    QTranslator qtTranslator;
+    qtTranslator.load("qt_" + QLocale::system().name(),
+                      QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+    app.installTranslator(&qtTranslator);
+
+    QTranslator myTranslator;
+    QString filename = "timetable_" + QLocale::system().name();
+    bool res = myTranslator.load(filename);
+    app.installTranslator(&myTranslator);
+
     if (!createConnection())
         return 1;
 
