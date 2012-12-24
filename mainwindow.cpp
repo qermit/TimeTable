@@ -61,6 +61,10 @@ MainWindow::MainWindow(const QString &hourTable, QWidget *parent)
     connect(sw, SIGNAL(wakeup()), this, SLOT(doWakeup()));
 
     addNewRecord();
+
+    _workedHoursTimer = new QTimer(this);
+    connect(_workedHoursTimer, SIGNAL(timeout()), this, SLOT(workedHoursUpdate()));
+    _workedHoursTimer->start(60*1000);
 }
 
 MainWindow::~MainWindow()
@@ -145,15 +149,18 @@ void MainWindow::changeDate(int row)
 
 void MainWindow::changeDate(QModelIndex index)
 {
-    updateDetails(index.data().toDate());
     _calendar->setSelectedDate(index.data().toDate());
+
+    updateDetails(index.data().toDate());
     updateWeekHours(index.data().toDate());
+    updateDayHours(index.data().toDate());
 }
 
 void MainWindow::changeDate(const QDate& date)
 {
     updateDetails(date);
     updateWeekHours(date);
+    updateDayHours(date);
 }
 
 QGroupBox* MainWindow::createDaysGroupBox()
@@ -308,15 +315,18 @@ void MainWindow::about()
 
 void MainWindow::doSleep()
 {
+    _workedHoursTimer->stop();
     finalizeLastRecord();
 
-    updateDetails(_calendar->selectedDate());
     updateWeekHours(_calendar->selectedDate());
+    updateDayHours(_calendar->selectedDate());
 }
 
 void MainWindow::doWakeup()
 {
     addNewRecord();
+
+    _workedHoursTimer->start(60*1000);
 }
 
 int MainWindow::addNewRecord()
@@ -350,7 +360,10 @@ int MainWindow::addNewRecord()
 void MainWindow::finalizeLastRecord()
 {
     QDateTime currentDate = QDateTime(QDate::currentDate());
-    for (int i = _model->rowCount()-1; i >=0 ; i--)
+    QString filter = QString::number(currentDate.toUTC().toTime_t(), 10);
+    _model->setFilter("day = '" + filter + "'");
+    int count = _model->rowCount();
+    for (int i = count-1; i >=0 ; i--)
     {
         QSqlRecord record =  _model->record(i);
         if (record.value("day") == currentDate.toUTC().toTime_t())
@@ -360,21 +373,10 @@ void MainWindow::finalizeLastRecord()
             {
                 record.setValue("end", QDateTime::currentDateTime().toUTC().toTime_t());
                 val = record.value("end").toString();
-                //model->setRecord(i, record);
                 _model->removeRow(i);
                 _model->insertRecord(-1, record);
                 break;
             }
-        }
-    }
-
-    for (int i = 0; i < _model->rowCount(); i++)
-    {
-        QSqlRecord record =  _model->record(i);
-        if (record.value("day") == currentDate.toUTC().toTime_t())
-        {
-            QString val = record.value("end").toString();
-            qDebug() <<i<<val;
         }
     }
 }
@@ -382,6 +384,13 @@ void MainWindow::finalizeLastRecord()
 int MainWindow::generateRecordId()
 {
     return ++_newRecordId;
+}
+
+void MainWindow::updateDetails(const QDate& date)
+{
+    QDateTime dt(date);
+    QString filter = QString::number(dt.toUTC().toTime_t(), 10);
+    _model->setFilter("day = '" + filter + "'");
 }
 
 void MainWindow::updateWeekHours(const QDate& date)
@@ -393,13 +402,14 @@ void MainWindow::updateWeekHours(const QDate& date)
     _hoursPerWeek->setText(hpwText);
 }
 
-void MainWindow::updateDetails(const QDate& date)
+void MainWindow::updateDayHours(const QDate& date)
 {
-    QDateTime dt(date);
-    QString filter = QString::number(dt.toUTC().toTime_t(), 10);
-    int count = _model->rowCount();
-    _model->setFilter("day = '" + filter + "'");
-
     QModelIndex index = _daysModel->index(date.dayOfYear() - 1, 1);
     _hoursPerDay->setText(tr("Worked per day: ") + _daysModel->data(index).toString());
+}
+
+void MainWindow::workedHoursUpdate()
+{
+    updateWeekHours(QDate::currentDate());
+    updateDayHours(QDate::currentDate());
 }

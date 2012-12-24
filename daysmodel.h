@@ -11,9 +11,10 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const ;
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-    int calculateHoursPerWeek(QDate date) const;
+    int calculateHoursPerWeek(const QDate& date) const;
 private:
-    int calculateHours(QDate date) const;
+    int calculateHours(const QDate& date) const;
+    int calculateHoursFromUncompletedRecord(const QDate& date) const;
 private:
     QAbstractTableModel& _base;
 };

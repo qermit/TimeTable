@@ -50,17 +50,20 @@ QVariant DaysModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-int DaysModel::calculateHours(QDate date) const
+int DaysModel::calculateHours(const QDate& date) const
 {
     int res = 0;
-    for(int i=0; i<_base.rowCount(); i++)
+    QSqlRelationalTableModel& model = (QSqlRelationalTableModel&)_base;
+    QString currFilter = model.filter();
+    QDateTime dt(date);
+    QString filter = QString::number(dt.toUTC().toTime_t(), 10);
+    model.setFilter("day = '" + filter + "'");
+    int count = model.rowCount();
+    for(int i=0; i<count; i++)
     {
-        QSqlRecord record =  ((QSqlRelationalTableModel&)_base).record(i);
-        QString ddd = QDateTime::fromTime_t(record.value("day").toUInt()).date().toString("dd-MM-yyyy");
+        QSqlRecord record =  model.record(i);
         if(QDateTime::fromTime_t(record.value("day").toUInt()).date() == date)
         {
-            QString val = record.value("end").toString();
-            QString dattt = date.toString("dd-MM-yyyy");
             if(record.value("end").toUInt() > 0)
             {
                 uint diff = record.value("end").toUInt() - record.value("start").toUInt();
@@ -69,10 +72,14 @@ int DaysModel::calculateHours(QDate date) const
         }
     }
 
+    res += calculateHoursFromUncompletedRecord(date);
+
+    model.setFilter(currFilter);
+
     return res;
 }
 
-int DaysModel::calculateHoursPerWeek(QDate date) const
+int DaysModel::calculateHoursPerWeek(const QDate& date) const
 {
     int res = 0;
     QSqlRelationalTableModel& model = (QSqlRelationalTableModel&)_base;
@@ -90,6 +97,36 @@ int DaysModel::calculateHoursPerWeek(QDate date) const
         }
     }
 
+    res += calculateHoursFromUncompletedRecord(date);
+
     model.setFilter(currFilter);
+    return res;
+}
+
+int DaysModel::calculateHoursFromUncompletedRecord(const QDate& date) const
+{
+    int res = 0;
+    QSqlRelationalTableModel& model = (QSqlRelationalTableModel&)_base;
+    QDateTime dt(date);
+    QString filter = QString::number(dt.toUTC().toTime_t(), 10);
+    model.setFilter("day = '" + filter + "'");
+    int count = model.rowCount();
+    for (int i = count-1; i >=0 ; i--)
+    {
+        QSqlRecord record =  model.record(i);
+        QDateTime dt(QDate::currentDate());
+        if (record.value("day") == dt.toUTC().toTime_t())
+        {
+            QString val = record.value("end").toString();
+            if(val == "0")
+            {
+                uint start = record.value("start").toUInt();
+                uint end = QDateTime::currentDateTimeUtc().toTime_t();
+                res = end - start;
+                break;
+            }
+        }
+    }
+
     return res;
 }

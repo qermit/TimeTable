@@ -38,7 +38,7 @@ private slots:
     void changeDate(const QDate& date);
     void updateHeader(QModelIndex, int, int);
     void iconActivated(QSystemTrayIcon::ActivationReason reason);
-
+    void workedHoursUpdate();
 private:
     void createActions();
     void createTrayIcon();
@@ -52,6 +52,7 @@ private:
     void finalizeLastRecord();
     void updateDetails(const QDate& date);
     void updateWeekHours(const QDate& date);
+    void updateDayHours(const QDate& date);
     void changeEvent(QEvent* e);
 private:
     int _newRecordId;
@@ -66,7 +67,7 @@ private:
     QAction *_quitAction;
     QSystemTrayIcon *trayIcon;
     QMenu *trayIconMenu;
-    //QPushButton *_closeButton;
+    QTimer* _workedHoursTimer;
 };
 
 #endif
