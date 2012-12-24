@@ -42,7 +42,8 @@ QVariant DaysModel::data(const QModelIndex &index, int role) const
         else
         {
             int seconds = calculateHours(date);
-            return QString::fromAscii("%1:%2").arg(seconds/3600).arg((seconds%3600)/60);
+            QTime time(seconds/3600, (seconds%3600)/60, (seconds%3600)%60);
+            return time.toString("hh:mm:ss");
         }
     }
 
@@ -68,29 +69,6 @@ int DaysModel::calculateHours(QDate date) const
         }
     }
 
-    /*    QSqlRelationalTableModel& model = (QSqlRelationalTableModel&)_base;
-    int count = model.rowCount();
-    model.setFilter("day = '" + date.toString() + "'");
-    model.select();
-    count = model.rowCount();
-    for(int i=0; i<count; i++)
-    {
-        QSqlRecord record =  model.record(i);
-        QString ddd = QDateTime::fromTime_t(record.value("day").toUInt()).date().toString("dd-MM-yyyy");
-        if(QDateTime::fromTime_t(record.value("day").toUInt()).date() == date)
-        {
-            QString val = record.value("end").toString();
-            QString dattt = date.toString("dd-MM-yyyy");
-            if(record.value("end").toUInt() > 0)
-            {
-                uint diff = record.value("end").toUInt() - record.value("start").toUInt();
-                res+=diff;
-            }
-        }
-    }
-
-    model.setFilter(QString());
-*/
     return res;
 }
 

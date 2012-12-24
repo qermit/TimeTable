@@ -153,7 +153,6 @@ void MainWindow::changeDate(QModelIndex index)
 void MainWindow::changeDate(const QDate& date)
 {
     updateDetails(date);
-
     updateWeekHours(date);
 }
 
@@ -196,8 +195,8 @@ QGroupBox* MainWindow::createDetailsGroupBox()
     _detailsView->setModel(_model);
     adjustHeader();
     _detailsView->setItemDelegateForColumn(2, new DateFormatDelegate("dd.MM.yyyy", this));
-    _detailsView->setItemDelegateForColumn(3, new TimeFormatDelegate("hh:mm", this));
-    _detailsView->setItemDelegateForColumn(4, new TimeFormatDelegate("hh:mm", this));
+    _detailsView->setItemDelegateForColumn(3, new TimeFormatDelegate("hh:mm:ss", this));
+    _detailsView->setItemDelegateForColumn(4, new TimeFormatDelegate("hh:mm:ss", this));
     _detailsView->horizontalHeader()->setResizeMode(2, QHeaderView::Stretch);
 
     QLocale locale = _detailsView->locale();
@@ -310,6 +309,9 @@ void MainWindow::about()
 void MainWindow::doSleep()
 {
     finalizeLastRecord();
+
+    updateDetails(_calendar->selectedDate());
+    updateWeekHours(_calendar->selectedDate());
 }
 
 void MainWindow::doWakeup()
@@ -386,7 +388,8 @@ void MainWindow::updateWeekHours(const QDate& date)
 {
     QString hpwText = tr("Worked per week: ");
     int seconds = _daysModel->calculateHoursPerWeek(date);
-    hpwText += QString::fromAscii("%1:%2").arg(seconds/3600).arg((seconds%3600)/60);
+    QTime time(seconds/3600, (seconds%3600)/60, (seconds%3600)%60);
+    hpwText += time.toString("hh:mm:ss");
     _hoursPerWeek->setText(hpwText);
 }
 
