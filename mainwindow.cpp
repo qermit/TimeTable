@@ -194,7 +194,7 @@ QGroupBox* MainWindow::createDetailsGroupBox()
     _detailsView->setAlternatingRowColors(true);
     _detailsView->setModel(_model);
     adjustHeader();
-    _detailsView->setItemDelegateForColumn(2, new DateFormatDelegate("dd.MM.yyyy", this));
+    _detailsView->setItemDelegateForColumn(2, new DateFormatDelegate("dddd dd MMM yyyy", this));
     _detailsView->setItemDelegateForColumn(3, new TimeFormatDelegate("hh:mm:ss", this));
     _detailsView->setItemDelegateForColumn(4, new TimeFormatDelegate("hh:mm:ss", this));
     _detailsView->horizontalHeader()->setResizeMode(2, QHeaderView::Stretch);
