@@ -56,23 +56,21 @@ int DaysModel::calculateHours(const QDate& date) const
     QSqlRelationalTableModel& model = (QSqlRelationalTableModel&)_base;
     QString currFilter = model.filter();
     QDateTime dt(date);
-    QString filter = QString::number(dt.toUTC().toTime_t(), 10);
-    model.setFilter("day = '" + filter + "'");
+    QString newFilter = "day = '" + QString::number(dt.toUTC().toTime_t(), 10) + "'";
+    model.setFilter(newFilter);
     int count = model.rowCount();
     for(int i=0; i<count; i++)
     {
         QSqlRecord record =  model.record(i);
-        if(QDateTime::fromTime_t(record.value("day").toUInt()).date() == date)
+        if(record.value("end").toUInt() > 0)
         {
-            if(record.value("end").toUInt() > 0)
-            {
-                uint diff = record.value("end").toUInt() - record.value("start").toUInt();
-                res+=diff;
-            }
+            uint diff = record.value("end").toUInt() - record.value("start").toUInt();
+            res+=diff;
         }
     }
 
-    res += calculateHoursFromUncompletedRecord(date);
+    int resUncompleted = calculateHoursFromUncompletedRecord();
+    res += resUncompleted;
 
     model.setFilter(currFilter);
 
@@ -84,7 +82,8 @@ int DaysModel::calculateHoursPerWeek(const QDate& date) const
     int res = 0;
     QSqlRelationalTableModel& model = (QSqlRelationalTableModel&)_base;
     QString currFilter = model.filter();
-    model.setFilter("week = '" + QString::number(date.weekNumber(), 10) + "'");
+    QString newFilter = "week = '" + QString::number(date.weekNumber(), 10) + "'";
+    model.setFilter(newFilter);
     model.select();
     int count = model.rowCount();
     for(int i=0; i<count; i++)
@@ -97,19 +96,17 @@ int DaysModel::calculateHoursPerWeek(const QDate& date) const
         }
     }
 
-    res += calculateHoursFromUncompletedRecord(date);
+    int resUncompleted = calculateHoursFromUncompletedRecord();
+    res += resUncompleted;
 
     model.setFilter(currFilter);
     return res;
 }
 
-int DaysModel::calculateHoursFromUncompletedRecord(const QDate& date) const
+int DaysModel::calculateHoursFromUncompletedRecord() const
 {
     int res = 0;
     QSqlRelationalTableModel& model = (QSqlRelationalTableModel&)_base;
-    QDateTime dt(date);
-    QString filter = QString::number(dt.toUTC().toTime_t(), 10);
-    model.setFilter("day = '" + filter + "'");
     int count = model.rowCount();
     for (int i = count-1; i >=0 ; i--)
     {

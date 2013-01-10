@@ -80,25 +80,28 @@ bool WinSystemWatch::processWinEvent(MSG *m, long* result)
     qDebug() << QDateTime::currentDateTime().toString() << "m->message=" << m->message;
     qDebug() << QDateTime::currentDateTime().toString() << "m->wParam=" << m->wParam;
 
-    if(m->wParam == 0x5)
+    if(m->message == 689) // WM_WTSSESSION_CHANGE
     {
-        qDebug()<<"WTS_SESSION_LOGON"<<"\n";
-        emit wakeup();
-    }
-    else if(m->wParam == 0x6)
-    {
-        qDebug()<<"WTS_SESSION_LOGOFF"<<"\n";
-        emit sleep();
-    }
-    else if(m->wParam == 0x7)
-    {
-        qDebug()<<"WTS_SESSION_LOCK"<<"\n";
-        emit sleep();
-    }
-    else if(m->wParam == 0x8)
-    {
-        qDebug()<<"WTS_SESSION_UNLOCK"<<"\n";
-        emit wakeup();
+        if(m->wParam == 0x5)
+        {
+            qDebug()<<"WTS_SESSION_LOGON"<<"\n";
+            emit wakeup();
+        }
+        else if(m->wParam == 0x6)
+        {
+            qDebug()<<"WTS_SESSION_LOGOFF"<<"\n";
+            emit sleep();
+        }
+        else if(m->wParam == 0x7)
+        {
+            qDebug()<<"WTS_SESSION_LOCK"<<"\n";
+            emit sleep();
+        }
+        else if(m->wParam == 0x8)
+        {
+            qDebug()<<"WTS_SESSION_UNLOCK"<<"\n";
+            emit wakeup();
+        }
     }
 
     return false; // Let Qt handle the right return value.

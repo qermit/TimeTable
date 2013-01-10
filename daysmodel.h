@@ -14,7 +14,7 @@ public:
     int calculateHoursPerWeek(const QDate& date) const;
 private:
     int calculateHours(const QDate& date) const;
-    int calculateHoursFromUncompletedRecord(const QDate& date) const;
+    int calculateHoursFromUncompletedRecord() const;
 private:
     QAbstractTableModel& _base;
 };
