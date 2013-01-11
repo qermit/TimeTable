@@ -404,8 +404,11 @@ void MainWindow::updateWeekHours(const QDate& date)
 
 void MainWindow::updateDayHours(const QDate& date)
 {
-    QModelIndex index = _daysModel->index(date.dayOfYear() - 1, 1);
-    _hoursPerDay->setText(tr("Worked per day: ") + _daysModel->data(index).toString());
+    QString hpdText = tr("Worked per day: ");
+    int seconds = _daysModel->calculateHours(date);
+    QTime time(seconds/3600, (seconds%3600)/60, (seconds%3600)%60);
+    hpdText += time.toString("hh:mm:ss");
+    _hoursPerDay->setText(hpdText);
 }
 
 void MainWindow::workedHoursUpdate()
