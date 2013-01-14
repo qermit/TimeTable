@@ -3,6 +3,7 @@
 
 #include <QDomDocument>
 #include <QMainWindow>
+#include <QDialog>
 #include <QModelIndex>
 #include <qcoreevent.h>
 #include <QSystemTrayIcon>
@@ -21,7 +22,7 @@ class QDateTime;
 QT_END_NAMESPACE
 class DaysModel;
 
-class MainWindow : public QMainWindow
+class MainWindow : public QDialog
 {
     Q_OBJECT
 
@@ -32,7 +33,7 @@ public:
 public slots:
     void doSleep();
     void doWakeup();
-
+    virtual void setVisible(bool visible);
 private slots:
     void about();
     void changeDate(int row);
@@ -41,6 +42,7 @@ private slots:
     void updateHeader(QModelIndex, int, int);
     void iconActivated(QSystemTrayIcon::ActivationReason reason);
     void workedHoursUpdate();
+    void doRestore();
 private:
     void createActions();
     void createTrayIcon();
@@ -71,6 +73,7 @@ private:
     QMenu *trayIconMenu;
     QTimer* _workedHoursTimer;
     QDateTime _sleepStartTime;
+    QRect _geometry;
 };
 
 #endif

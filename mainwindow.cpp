@@ -8,7 +8,7 @@
 #include "timedelegate.h"
 
 MainWindow::MainWindow(const QString &hourTable, QWidget *parent)
-    : QMainWindow(parent)
+    : QDialog(parent)
 {
     setWindowFlags( Qt::CustomizeWindowHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint );
 
@@ -35,12 +35,9 @@ MainWindow::MainWindow(const QString &hourTable, QWidget *parent)
     layout->addWidget(details, 1, 0);
     layout->setColumnStretch(0, 1);
 
-    QWidget *widget = new QWidget;
-    widget->setLayout(layout);
-    setCentralWidget(widget);
+    setLayout(layout);
     createMenuBar();
 
-    resize(350, 500);
     setWindowTitle(tr("Timetable"));
 
     createActions();
@@ -65,6 +62,16 @@ MainWindow::MainWindow(const QString &hourTable, QWidget *parent)
     _workedHoursTimer = new QTimer(this);
     connect(_workedHoursTimer, SIGNAL(timeout()), this, SLOT(workedHoursUpdate()));
     _workedHoursTimer->start(60*1000);
+
+    _geometry = QRect(500, 300, 350, 500);
+
+    this->setMinimumWidth(_geometry.width());
+    this->setMinimumHeight(_geometry.height());
+
+    this->setMaximumWidth(_geometry.width());
+    this->setMaximumHeight(_geometry.height());
+
+    setGeometry(_geometry);
 }
 
 MainWindow::~MainWindow()
@@ -89,7 +96,7 @@ void MainWindow::createTrayIcon()
 void MainWindow::createActions()
 {
     _restoreAction = new QAction(tr("&Restore"), this);
-    connect(_restoreAction, SIGNAL(triggered()), this, SLOT(showNormal()));
+    connect(_restoreAction, SIGNAL(triggered()), this, SLOT(doRestore()));
 
     _quitAction = new QAction(tr("&Quit"), this);
     connect(_quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
@@ -104,7 +111,7 @@ void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
         break;
     case QSystemTrayIcon::Trigger:
     case QSystemTrayIcon::DoubleClick:
-        showNormal();
+        QTimer::singleShot(250, this, SLOT(doRestore()));
         break;
     default:
         break;
@@ -119,6 +126,7 @@ void MainWindow::changeEvent(QEvent* e)
     {
         if (this->windowState() & Qt::WindowMinimized)
         {
+            _geometry = geometry();
             QTimer::singleShot(250, this, SLOT(hide()));
         }
         break;
@@ -127,7 +135,7 @@ void MainWindow::changeEvent(QEvent* e)
         break;
     }
 
-    QMainWindow::changeEvent(e);
+    QDialog::changeEvent(e);
 }
 
 void MainWindow::changeDate(int row)
@@ -270,13 +278,15 @@ void MainWindow::createMenuBar()
 
     quitAction->setShortcuts(QKeySequence::Quit);
 
-    QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+    /*QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+    fileMenu->addAction(exportAction);
+    fileMenu->addSeparator();
     fileMenu->addAction(quitAction);
 
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(aboutAction);
     helpMenu->addAction(aboutQtAction);
-
+*/
     connect(quitAction, SIGNAL(triggered(bool)), this, SLOT(close()));
     connect(aboutAction, SIGNAL(triggered(bool)), this, SLOT(about()));
     connect(aboutQtAction, SIGNAL(triggered(bool)), qApp, SLOT(aboutQt()));
@@ -434,3 +444,18 @@ void MainWindow::workedHoursUpdate()
     updateWeekHours(QDate::currentDate());
     updateDayHours(QDate::currentDate());
 }
+
+void MainWindow::doRestore()
+{
+    _calendar->setSelectedDate(QDate::currentDate());
+    changeDate(QDate::currentDate());
+    setGeometry(_geometry);
+    showNormal();
+}
+
+void MainWindow::setVisible(bool visible)
+{
+    _restoreAction->setEnabled(isMaximized() || !visible);
+    QDialog::setVisible(visible);
+}
+
