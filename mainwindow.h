@@ -6,6 +6,7 @@
 #include <QModelIndex>
 #include <qcoreevent.h>
 #include <QSystemTrayIcon>
+#include <qdatetime.h>
 
 QT_BEGIN_NAMESPACE
 class QFile;
@@ -16,6 +17,7 @@ class QSqlRelationalTableModel;
 class QTableView;
 class QEvent;
 class QCalendarWidget;
+class QDateTime;
 QT_END_NAMESPACE
 class DaysModel;
 
@@ -48,8 +50,8 @@ private:
     QGroupBox *createHoursGroupBox();
     void createMenuBar();
     int generateRecordId();
-    int addNewRecord();
-    void finalizeLastRecord();
+    int addNewRecord(const QDateTime& dateTime);
+    void finalizeLastRecord(const QDateTime& dateTime);
     void updateDetails(const QDate& date);
     void updateWeekHours(const QDate& date);
     void updateDayHours(const QDate& date);
@@ -68,6 +70,7 @@ private:
     QSystemTrayIcon *trayIcon;
     QMenu *trayIconMenu;
     QTimer* _workedHoursTimer;
+    QDateTime _sleepStartTime;
 };
 
 #endif

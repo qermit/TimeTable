@@ -60,7 +60,7 @@ MainWindow::MainWindow(const QString &hourTable, QWidget *parent)
     connect(sw, SIGNAL(sleep()), this, SLOT(doSleep()));
     connect(sw, SIGNAL(wakeup()), this, SLOT(doWakeup()));
 
-    addNewRecord();
+    addNewRecord(QDateTime::currentDateTimeUtc());
 
     _workedHoursTimer = new QTimer(this);
     connect(_workedHoursTimer, SIGNAL(timeout()), this, SLOT(workedHoursUpdate()));
@@ -69,7 +69,7 @@ MainWindow::MainWindow(const QString &hourTable, QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    finalizeLastRecord();
+    finalizeLastRecord(QDateTime::currentDateTimeUtc());
 
     delete _daysModel;
     delete _model;
@@ -316,20 +316,38 @@ void MainWindow::about()
 void MainWindow::doSleep()
 {
     _workedHoursTimer->stop();
-    finalizeLastRecord();
 
-    updateWeekHours(_calendar->selectedDate());
-    updateDayHours(_calendar->selectedDate());
+    _sleepStartTime = QDateTime::currentDateTimeUtc();
 }
 
 void MainWindow::doWakeup()
 {
-    addNewRecord();
+    QDateTime currentDt(QDateTime::currentDateTimeUtc());
+    if(currentDt.toTime_t() - _sleepStartTime.toTime_t() <= 15 * 60)
+    {
+        //Do nothing according to requirements. 15 minutes...
+    }
+    else if(currentDt.toTime_t() - _sleepStartTime.toTime_t() > 15 * 60 &&
+            currentDt.toTime_t() - _sleepStartTime.toTime_t() <= 60 * 60 &&
+            QMessageBox::information( this, tr("Warning"),
+                                           tr("You were absent more than 15 minutes. Would you like to mark this time as worked?"),
+                                           tr("Yes"), tr("No"),
+                                           0, 1 ) == 0)
+    {
+        // Do nothing according to requirements
+    }
+    else
+    {
+        finalizeLastRecord(_sleepStartTime);
+        addNewRecord(QDateTime::currentDateTimeUtc());
+    }
 
     _workedHoursTimer->start(60*1000);
+    updateWeekHours(_calendar->selectedDate());
+    updateDayHours(_calendar->selectedDate());
 }
 
-int MainWindow::addNewRecord()
+int MainWindow::addNewRecord(const QDateTime& dateTime)
 {
     int id = generateRecordId();
     QSqlRecord record;
@@ -341,10 +359,10 @@ int MainWindow::addNewRecord()
     QSqlField f5("end", QVariant::Int);
 
     f1.setValue(QVariant(id));
-    QDateTime currentDate = QDateTime(QDate::currentDate());
-    f2.setValue(QVariant(QDate::currentDate().weekNumber()));
+    QDateTime currentDate = QDateTime(dateTime.date());
+    f2.setValue(QVariant(dateTime.date().weekNumber()));
     f3.setValue(QVariant(currentDate.toUTC().toTime_t()));
-    f4.setValue(QVariant(QDateTime::currentDateTime().toUTC().toTime_t()));
+    f4.setValue(QVariant(dateTime.toUTC().toTime_t()));
     f5.setValue(QVariant(0));
     record.append(f1);
     record.append(f2);
@@ -357,9 +375,9 @@ int MainWindow::addNewRecord()
     return id;
 }
 
-void MainWindow::finalizeLastRecord()
+void MainWindow::finalizeLastRecord(const QDateTime& dateTime)
 {
-    QDateTime currentDate = QDateTime(QDate::currentDate());
+    QDateTime currentDate = QDateTime(dateTime.date());
     QString filter = QString::number(currentDate.toUTC().toTime_t(), 10);
     _model->setFilter("day = '" + filter + "'");
     int count = _model->rowCount();
@@ -371,7 +389,7 @@ void MainWindow::finalizeLastRecord()
             QString val = record.value("end").toString();
             if(val == "0")
             {
-                record.setValue("end", QDateTime::currentDateTime().toUTC().toTime_t());
+                record.setValue("end", dateTime.toUTC().toTime_t());
                 val = record.value("end").toString();
                 _model->removeRow(i);
                 _model->insertRecord(-1, record);
