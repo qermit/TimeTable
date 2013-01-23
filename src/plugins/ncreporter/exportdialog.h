@@ -1,0 +1,30 @@
+#ifndef EXPORTDIALOG_H
+#define EXPORTDIALOG_H
+
+#include <QtGui>
+
+class NCReport;
+
+class ExportDialog : public QDialog
+{
+    Q_OBJECT
+public:
+    ExportDialog(QWidget *parent = 0);
+    ~ExportDialog();
+
+private slots:
+    void doExport();
+
+private:
+    QDialogButtonBox* createButtons();
+    QGroupBox* createInputWidgets();
+    bool connectDB(const QString& id);
+
+private:
+    NCReport* _reporter;
+    QDateEdit* _leftDate;
+    QDateEdit* _rightDate;
+};
+
+
+#endif // EXPORTDIALOG_H
