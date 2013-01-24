@@ -2,6 +2,7 @@
 #include "ncreportoutput.h"
 #include "ncreportpreviewoutput.h"
 #include "ncreportpreviewwindow.h"
+#include "datetimerenderer.h"
 
 #include <QSqlDatabase>
 #include <QSqlError>
@@ -107,6 +108,15 @@ void ExportDialog::doExport()
     _reporter->setReportFile("report_general.xml");
     _reporter->addParameter("left", QVariant(left));
     _reporter->addParameter("right", QVariant(right));
+
+    TimeItemRendering* timeRenderer = new TimeItemRendering();
+    timeRenderer->setID("timeCustom");
+    _reporter->addItemRenderingClass(timeRenderer);
+
+    DateItemRendering* dateRenderer = new DateItemRendering();
+    dateRenderer->setID("dateCustom");
+    _reporter->addItemRenderingClass(dateRenderer);
+
     _reporter->runReportToPreview(); // run to preview output
 
     if (_reporter->hasError())

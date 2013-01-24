@@ -5,10 +5,12 @@ CONFIG         += plugin
 INCLUDEPATH     += ../../base
 
 HEADERS         = ncreporter.h \
-	exportdialog.h
+	exportdialog.h \
+    datetimerenderer.h
 
 SOURCES         = ncreporter.cpp \
-	exportdialog.cpp 
+	exportdialog.cpp \ 
+    datetimerenderer.cpp
 
 TARGET          = $$qtLibraryTarget(nc-reporter-plugin)
 DESTDIR         = ../../build/bin/plugins
