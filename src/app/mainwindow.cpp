@@ -20,6 +20,8 @@ MainWindow::MainWindow(const QString &hourTable, QWidget *parent)
 
     _daysModel = new DaysModel(*_model, this);
 
+    initializeTranslators(QLocale::system().name());
+
     QGroupBox *days = createDaysGroupBox();
     QGroupBox *details = createDetailsGroupBox();
 
@@ -274,21 +276,10 @@ QGroupBox* MainWindow::createHoursGroupBox()
 void MainWindow::createMenuBar()
 {
     QAction *quitAction = new QAction(tr("&Quit"), this);
-    QAction *aboutAction = new QAction(tr("&About"), this);
-    QAction *aboutQtAction = new QAction(tr("About &Qt"), this);
     QAction *exportAction = new QAction(tr("&Export"), this);
 
     quitAction->setShortcuts(QKeySequence::Quit);
 
-    /*QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
-    fileMenu->addAction(exportAction);
-    fileMenu->addSeparator();
-    fileMenu->addAction(quitAction);
-
-    QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
-    helpMenu->addAction(aboutAction);
-    helpMenu->addAction(aboutQtAction);
-*/
     QPushButton* help = new QPushButton(tr("Help"));
     QPushButton* report = new QPushButton(tr("Report"));
     report->setEnabled(reporterPluginsExist());
@@ -320,6 +311,7 @@ void MainWindow::updateHeader(QModelIndex, int, int)
 void MainWindow::adjustHeader()
 {
     _detailsView->hideColumn(1);
+    _detailsView->hideColumn(5);
     _detailsView->horizontalHeader()->setResizeMode(4, QHeaderView::Stretch);
     _detailsView->horizontalHeader()->model()->setHeaderData(0, Qt::Horizontal, tr("Id"));
     _detailsView->horizontalHeader()->model()->setHeaderData(2, Qt::Horizontal, tr("Date"));
@@ -387,6 +379,7 @@ int MainWindow::addNewRecord(const QDateTime& dateTime)
     QSqlField f3("day", QVariant::UInt);
     QSqlField f4("start", QVariant::Int);
     QSqlField f5("end", QVariant::Int);
+    QSqlField f6("sum", QVariant::Int);
 
     f1.setValue(QVariant(id));
     QDateTime currentDate = QDateTime(dateTime.date());
@@ -394,13 +387,16 @@ int MainWindow::addNewRecord(const QDateTime& dateTime)
     f3.setValue(QVariant(currentDate.toUTC().toTime_t()));
     f4.setValue(QVariant(dateTime.toUTC().toTime_t()));
     f5.setValue(QVariant(0));
+    f6.setValue(QVariant(0));
+
     record.append(f1);
     record.append(f2);
     record.append(f3);
     record.append(f4);
     record.append(f5);
+    record.append(f6);
 
-    bool res = _model->insertRecord(-1, record);
+    _model->insertRecord(-1, record);
 
     return id;
 }
@@ -419,7 +415,10 @@ void MainWindow::finalizeLastRecord(const QDateTime& dateTime)
             QString val = record.value("end").toString();
             if(val == "0")
             {
-                record.setValue("end", dateTime.toUTC().toTime_t());
+                uint timeEnd = dateTime.toUTC().toTime_t();
+                record.setValue("end", timeEnd);
+                uint timeSum = timeEnd - record.value("start").toUInt();
+                record.setValue("sum", timeSum);
                 val = record.value("end").toString();
                 _model->removeRow(i);
                 _model->insertRecord(-1, record);
@@ -468,9 +467,7 @@ void MainWindow::workedHoursUpdate()
 void MainWindow::exportTo()
 {
     QDir pluginsDir(qApp->applicationDirPath());
-    qDebug() << "pluginsdir =" + qApp->applicationDirPath().toAscii() << "\n";
     pluginsDir.cd("plugins");
-    qDebug() << "pluginsdir =" + pluginsDir.path().toAscii() << "\n";
 
     foreach (QString fileName, pluginsDir.entryList(QDir::Files))
     {
@@ -506,9 +503,40 @@ bool MainWindow::reporterPluginsExist()
 {
     bool res = false;
     QDir pluginsDir(qApp->applicationDirPath());
-    qDebug() << "pluginsdir =" + qApp->applicationDirPath().toAscii() << "\n";
     pluginsDir.cd("plugins");
-    qDebug() << "pluginsdir =" + pluginsDir.path().toAscii() << "\n";
+
+    foreach (QString fileName, pluginsDir.entryList(QDir::Files))
+    {
+        QPluginLoader pluginLoader(pluginsDir.absoluteFilePath(fileName));
+        QObject *plugin = pluginLoader.instance();
+        if (plugin)
+        {
+            ReporterInterface* reporterInterface = qobject_cast<ReporterInterface*>(plugin);
+            res = (reporterInterface != NULL);
+        }
+    }
+
+    return res;
+}
+
+void MainWindow::initializeTranslators(const QString& locale)
+{
+    for(int i=_transList.count()-1; i>=0; i--)
+    {
+        QTranslator* tr = _transList[i];
+        QApplication::removeTranslator(tr);
+        _transList.removeLast();
+        delete tr;
+    }
+
+    QDir appDir(qApp->applicationDirPath());
+    QTranslator* tr = new QTranslator;
+    bool result = tr->load(QString("timetable_" + locale), appDir.absolutePath());
+    QApplication::installTranslator(tr);
+    _transList.append(tr);
+
+    QDir pluginsDir(qApp->applicationDirPath());
+    pluginsDir.cd("plugins");
 
     foreach (QString fileName, pluginsDir.entryList(QDir::Files))
     {
@@ -519,15 +547,19 @@ bool MainWindow::reporterPluginsExist()
             ReporterInterface* reporterInterface = qobject_cast<ReporterInterface*>(plugin);
             if(reporterInterface)
             {
-                QString name = reporterInterface->type();
-                qDebug() << "pluginname = " + name.toAscii() << "\n";
+                QString filename(reporterInterface->getTranslationFile(locale));
+                if(filename.length())
+                {
+                    QTranslator* tr = new QTranslator;
+                    result = tr->load(filename, appDir.absolutePath());
+                    if(result)
+                    {
+                        QApplication::installTranslator(tr);
+                        _transList.append(tr);
+                    }
+                }
             }
-
-            res = true;
         }
     }
-
-    return res;
 }
-
 

@@ -4,7 +4,6 @@
  
 NcReporter::NcReporter() 
 {
-    int a = 0;
 }
 
 NcReporter::~NcReporter()
@@ -16,6 +15,12 @@ QString NcReporter::type()
 	QString type("NcReporter");
 	return type;
 }
+
+QString NcReporter::getTranslationFile(const QString& locale)
+{
+	return QString("nc_reporter_plugin_" + locale);
+}
+
 
 void NcReporter::generateReport()
 {

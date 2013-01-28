@@ -23,4 +23,6 @@ CONFIG( debug, debug|release ) {
 	LIBS += C:/NCReport/2.8.7.MinGW.eval/lib/libncreport2.a
 }
 
+TRANSLATIONS = ./lang/nc_reporter_plugin_ru.ts \
+			   ./lang/nc_reporter_plugin_en.ts
 

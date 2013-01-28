@@ -15,7 +15,8 @@ SystemWatch::SystemWatch() : QObject(qApp)
 
 SystemWatch* SystemWatch::instance()
 {
-    if (!instance_) {
+    if (!instance_)
+    {
 #if defined(Q_WS_MAC)
         instance_ = new MacSystemWatch();
 #elif defined(Q_WS_WIN)

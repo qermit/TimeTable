@@ -50,7 +50,6 @@ QDialogButtonBox* ExportDialog::createButtons()
 QGroupBox* ExportDialog::createInputWidgets()
 {
     QGroupBox* mainBox = new QGroupBox(this);
-    //mainBox->setStyleSheet("border:0;");
     QLabel* intervalLabel = new QLabel(tr("Interval"), this);
 
     QGroupBox* intervalBox = new QGroupBox();
@@ -63,8 +62,12 @@ QGroupBox* ExportDialog::createInputWidgets()
     QRadioButton *radio2 = new QRadioButton(tr("Select"));
     _leftDate = new QDateEdit(QDate::currentDate());
     _leftDate->setMinimumHeight(20);
+    _leftDate->setEnabled(!radio1->isChecked());
     _rightDate = new QDateEdit(QDate::currentDate());
     _rightDate->setMinimumHeight(20);
+    _rightDate->setEnabled(!radio1->isChecked());
+    connect(radio1, SIGNAL(clicked()), this, SLOT(setAllRecords()));
+    connect(radio2, SIGNAL(clicked()), this, SLOT(setRecordsFromInterval()));
 
     QVBoxLayout *vbox = new QVBoxLayout;
     vbox->addWidget(radio1);
@@ -95,8 +98,8 @@ void ExportDialog::doExport()
     if ( !connectDB("northwind") )	// connect SQL database using connection id: northwind
         return;
 
-    uint left = QDateTime::fromString(_leftDate->text(), "dd.MM.yyyy").toUTC().toTime_t();
-    uint right = QDateTime::fromString(_rightDate->text(), "dd.MM.yyyy").toUTC().toTime_t();
+    uint left = QDateTime::fromString(_leftDate->isEnabled() ? _leftDate->text() : "01.10.1970", "dd.MM.yyyy").toUTC().toTime_t();
+    uint right = QDateTime::fromString(_rightDate->isEnabled() ? _rightDate->text() : "31.12.2100", "dd.MM.yyyy").toUTC().toTime_t();
     if(left > right)
     {
         QMessageBox::warning( 0, tr("Error"), tr("Incorrect report interval"));
@@ -121,7 +124,7 @@ void ExportDialog::doExport()
 
     if (_reporter->hasError())
     {
-        QMessageBox::information( 0, "Report error", _reporter->lastErrorMsg());
+        QMessageBox::information( 0, tr("Report error"), _reporter->lastErrorMsg());
         return;
     }
     else
@@ -140,16 +143,28 @@ bool ExportDialog::connectDB( const QString& id )
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     if(!db.isValid())
     {
-        QMessageBox::warning( 0, "Database error", QObject::tr("Could not load database driver.") );
+        QMessageBox::warning( 0, tr("Database error"), QObject::tr("Could not load database driver.") );
         return false;
     }
     db.setDatabaseName("timetable.db");
 
     if(!db.open())
     {
-        QMessageBox::warning( 0, "NCReport error", QObject::tr("Cannot open database: ")+db.lastError().databaseText() );
+        QMessageBox::warning( 0, tr("NCReport error"), QObject::tr("Cannot open database: ")+db.lastError().databaseText() );
         return false;
     }
 
     return true;
+}
+
+void ExportDialog::setAllRecords()
+{
+    _leftDate->setEnabled(false);
+    _rightDate->setEnabled(false);
+}
+
+void ExportDialog::setRecordsFromInterval()
+{
+    _leftDate->setEnabled(true);
+    _rightDate->setEnabled(true);
 }

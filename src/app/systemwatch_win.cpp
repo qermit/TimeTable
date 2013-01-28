@@ -6,7 +6,6 @@
 #include <QtGui>
 #include <QLibrary>
 
-// workaround for the very old MinGW version bundled with Qt
 #ifndef PBT_APMSUSPEND
 #include <pbt.h>
 #endif
@@ -17,7 +16,7 @@ public:
     MessageWindow(WinSystemWatch *parent)
         : syswatch(parent)
     {
-        create();	// really create the window to enable messages
+        create();
 
         QLibrary wtsapi32Lib("wtsapi32");
 
@@ -33,7 +32,6 @@ public:
 
             if(user32Lib.isLoaded())
             {
-                //                WTSRS = (MyPrototype2)wtsapi32Lib.resolve("WTSRegisterSessionNotification");
                 WTSRegisterSessionNotification = (RegisterSessionNotification)wtsapi32Lib.resolve("WTSRegisterSessionNotification");
                 if(WTSRegisterSessionNotification)
                 {
@@ -59,20 +57,17 @@ public:
 
     typedef bool (*RegisterSessionNotification)(HWND,DWORD);
     RegisterSessionNotification WTSRegisterSessionNotification;
-
-    //    typedef bool (*MyPrototype2)(HWND,DWORD);
-    //    MyPrototype2 WTSRS;
 };
 
 WinSystemWatch::WinSystemWatch() 
 {
-    d = new MessageWindow(this);
+    _msgWnd = new MessageWindow(this);
 }
 
 WinSystemWatch::~WinSystemWatch()
 {
-    delete d;
-    d = 0;
+    delete _msgWnd;
+    _msgWnd = NULL;
 }
 
 bool WinSystemWatch::processWinEvent(MSG *m, long* result)

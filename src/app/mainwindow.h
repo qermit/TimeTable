@@ -1,5 +1,5 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef __MAINWINDOW_H__
+#define __MAINWINDOW_H__
 
 #include <QMainWindow>
 #include <QDialog>
@@ -7,6 +7,7 @@
 #include <qcoreevent.h>
 #include <QSystemTrayIcon>
 #include <qdatetime.h>
+#include <QTranslator>
 
 QT_BEGIN_NAMESPACE
 class QFile;
@@ -24,10 +25,8 @@ class DaysModel;
 class MainWindow : public QDialog
 {
     Q_OBJECT
-
 public:
     MainWindow(const QString &hoursTable, QWidget *parent = 0);
-
     ~MainWindow();
 public slots:
     void doSleep();
@@ -58,8 +57,10 @@ private:
     void updateWeekHours(const QDate& date);
     void updateDayHours(const QDate& date);
     void changeEvent(QEvent* e);
+    void initializeTranslators(const QString& locale);
     bool reporterPluginsExist();
 private:
+    QList<QTranslator*> _transList;
     int _newRecordId;
     QTableView* _detailsView;
     QCalendarWidget* _calendar;
@@ -77,4 +78,4 @@ private:
     QRect _geometry;
 };
 
-#endif
+#endif // __MAINWINDOW_H__

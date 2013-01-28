@@ -8,15 +8,16 @@
 
 class NcReporter : public QObject, public ReporterInterface
 {
-	Q_OBJECT
-	Q_INTERFACES(ReporterInterface)
+    Q_OBJECT
+    Q_INTERFACES(ReporterInterface)
 
 public:
-	NcReporter();
-	~NcReporter();
+    NcReporter();
+    ~NcReporter();
 private:
-	 virtual QString type();
-	 virtual void generateReport();
+    virtual QString type();
+    virtual QString getTranslationFile(const QString& locale);
+    virtual void generateReport();
  };
 
 

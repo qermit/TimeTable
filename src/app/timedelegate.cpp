@@ -2,7 +2,7 @@
 #include "timedelegate.h"
 
 DateFormatDelegate::DateFormatDelegate (QString dateFormat, QObject *parent = 0) : 
-    QStyledItemDelegate(parent), m_dateFormat(dateFormat)
+    QStyledItemDelegate(parent), _dateFormat(dateFormat)
 {
 }
 
@@ -10,11 +10,11 @@ QString DateFormatDelegate::displayText(const QVariant & value, const QLocale & 
 {
     Q_UNUSED(locale);
     QDateTime date(QDateTime::fromTime_t(value.toUInt()));
-    return date.toString(m_dateFormat);
+    return date.toString(_dateFormat);
 }
 
 TimeFormatDelegate::TimeFormatDelegate (QString timeFormat, QObject *parent = 0) : 
-    QStyledItemDelegate(parent), m_timeFormat(timeFormat)
+    QStyledItemDelegate(parent), _timeFormat(timeFormat)
 {
 }
 
@@ -25,7 +25,7 @@ QString TimeFormatDelegate::displayText(const QVariant & value, const QLocale & 
     if(value.toUInt() != 0)
     {
         QDateTime date(QDateTime::fromTime_t(value.toUInt()));
-        res = date.toString(m_timeFormat);
+        res = date.toString(_timeFormat);
     }
     return res;
 }

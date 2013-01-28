@@ -14,6 +14,8 @@ public:
 
 private slots:
     void doExport();
+    void setAllRecords();
+    void setRecordsFromInterval();
 
 private:
     QDialogButtonBox* createButtons();

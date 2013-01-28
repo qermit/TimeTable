@@ -1,5 +1,5 @@
-#ifndef SYSTEMWATCH_WIN_H
-#define SYSTEMWATCH_WIN_H
+#ifndef __SYSTEMWATCH_WIN_H__
+#define __SYSTEMWATCH_WIN_H__
 
 #include "systemwatch.h"
 
@@ -14,11 +14,11 @@ class WinSystemWatch : public SystemWatch
 public:
     WinSystemWatch();
     ~WinSystemWatch();
-
+private:
+    bool processWinEvent(MSG *m, long* result);
 private:
     class MessageWindow;
-    MessageWindow *d;
-    bool processWinEvent(MSG *m, long* result);
+    MessageWindow* _msgWnd;
 };
 
-#endif
+#endif // __SYSTEMWATCH_WIN_H__

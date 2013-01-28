@@ -1,5 +1,5 @@
-#ifndef DATABASE_H
-#define DATABASE_H
+#ifndef __DATABASE_H__
+#define __DATABASE_H__
 
 #include <QMessageBox>
 #include <QSqlDatabase>
@@ -9,7 +9,6 @@
 static bool createConnection()
 {
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    //db.setDatabaseName(":memory:");
 
     db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName("timetable.db");
@@ -32,7 +31,8 @@ static bool createConnection()
                    "week int, "
                    "day uint, "
                    "start int, "
-                   "end int )");
+                   "end int, "
+                   "sum int )");
     }
     else // Database exists. Just open it
     {
@@ -50,6 +50,4 @@ static bool createConnection()
     return true;
 }
 
-#endif
-
-
+#endif // __DATABASE_H__
