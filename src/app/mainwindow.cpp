@@ -442,19 +442,19 @@ void MainWindow::updateDetails(const QDate& date)
 
 void MainWindow::updateWeekHours(const QDate& date)
 {
-    QString hpwText = tr("Worked per week: ");
     int seconds = _daysModel->calculateHoursPerWeek(date);
-    QTime time(seconds/3600, (seconds%3600)/60, (seconds%3600)%60);
-    hpwText += time.toString("hh:mm:ss");
+    QString hpwText = tr("Worked per week: %1:%2:%3").arg(seconds/3600, 2, 10, QLatin1Char('0'))
+                                                    .arg((seconds%3600)/60, 2, 10, QLatin1Char('0'))
+                                                    .arg((seconds%3600)%60, 2, 10, QLatin1Char('0'));
     _hoursPerWeek->setText(hpwText);
 }
 
 void MainWindow::updateDayHours(const QDate& date)
 {
-    QString hpdText = tr("Worked per day: ");
     int seconds = _daysModel->calculateHours(date);
-    QTime time(seconds/3600, (seconds%3600)/60, (seconds%3600)%60);
-    hpdText += time.toString("hh:mm:ss");
+    QString hpdText = tr("Worked per day: %1:%2:%3").arg(seconds/3600, 2, 10, QLatin1Char('0'))
+                                                    .arg((seconds%3600)/60, 2, 10, QLatin1Char('0'))
+                                                    .arg((seconds%3600)%60, 2, 10, QLatin1Char('0'));
     _hoursPerDay->setText(hpdText);
 }
 
