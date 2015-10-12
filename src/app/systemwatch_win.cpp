@@ -35,22 +35,23 @@ public:
                 WTSRegisterSessionNotification = (RegisterSessionNotification)wtsapi32Lib.resolve("WTSRegisterSessionNotification");
                 if(WTSRegisterSessionNotification)
                 {
-                    WTSRegisterSessionNotification(MessageWindow::winId(),0);
+                    WTSRegisterSessionNotification((HWND)MessageWindow::winId(),0);
                 }
             }
         }
     }
 
-    bool winEvent(MSG *m, long* result)
-    {
+    bool nativeEvent(const QByteArray &eventType, void *message, long *result) {
+        MSG *m = reinterpret_cast<MSG*>(message);
         if (syswatch->processWinEvent(m, result))
         {
             return true;
         }
         else
         {
-            return QWidget::winEvent(m, result);
+            return QWidget::nativeEvent(eventType, message, result);
         }
+
     }
 
     WinSystemWatch *syswatch;

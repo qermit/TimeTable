@@ -1,4 +1,5 @@
 #include <QtGui>
+#include <QApplication>
 
 #include "database.h"
 #include "mainwindow.h"

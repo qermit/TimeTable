@@ -2,6 +2,15 @@
 
 #include <QtGui>
 #include <QtSql>
+#include <QGridLayout>
+#include <QObject>
+#include <QMenu>
+#include <QCalendarWidget>
+#include <QLabel>
+#include <QGroupBox>
+#include <QWidget>
+//#include <QTableView>
+#include <QtWidgets>
 #include "systemwatch.h"
 #include "daysmodel.h"
 #include "timedelegate.h"
@@ -33,8 +42,8 @@ MainWindow::MainWindow(const QString &hourTable, QWidget *parent)
             this, SLOT(updateHeader(QModelIndex,int,int)));
 
     QGridLayout *layout = new QGridLayout;
-    layout->addWidget(days, 0, 0);
-    layout->addWidget(details, 1, 0);
+    layout->addWidget((QWidget*)(days), 0, 0);
+    layout->addWidget((QWidget*)details, 1, 0);
 
     layout->setColumnStretch(0, 1);
 
@@ -215,7 +224,7 @@ QGroupBox* MainWindow::createDetailsGroupBox()
     _detailsView->setItemDelegateForColumn(2, new DateFormatDelegate("dddd dd MMM yyyy", this));
     _detailsView->setItemDelegateForColumn(3, new TimeFormatDelegate("hh:mm:ss", this));
     _detailsView->setItemDelegateForColumn(4, new TimeFormatDelegate("hh:mm:ss", this));
-    _detailsView->horizontalHeader()->setResizeMode(2, QHeaderView::Stretch);
+    _detailsView->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
 
     QLocale locale = _detailsView->locale();
     locale.setNumberOptions(QLocale::OmitGroupSeparator);
@@ -247,7 +256,7 @@ QGroupBox* MainWindow::createHoursGroupBox()
     _hoursView->verticalHeader()->hide();
     _hoursView->setAlternatingRowColors(true);
     _hoursView->setModel(_daysModel);
-    _hoursView->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
+    _hoursView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     _hoursView->resizeColumnToContents(1);
 
     QDate current = QDate::currentDate();
@@ -312,7 +321,7 @@ void MainWindow::adjustHeader()
 {
     _detailsView->hideColumn(1);
     _detailsView->hideColumn(5);
-    _detailsView->horizontalHeader()->setResizeMode(4, QHeaderView::Stretch);
+    _detailsView->horizontalHeader()->setSectionResizeMode(4, QHeaderView::Stretch);
     _detailsView->horizontalHeader()->model()->setHeaderData(0, Qt::Horizontal, tr("Id"));
     _detailsView->horizontalHeader()->model()->setHeaderData(2, Qt::Horizontal, tr("Date"));
     _detailsView->horizontalHeader()->model()->setHeaderData(3, Qt::Horizontal, tr("Start"));

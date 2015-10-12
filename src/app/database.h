@@ -11,9 +11,9 @@ static bool createConnection()
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
 
     db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("timetable.db");
+    db.setDatabaseName("D:\\Devel\\timetable.db");
 
-    if(!QFile::exists("timetable.db")) // Database does not exist yet
+    if(!QFile::exists("D:\\Devel\\timetable.db")) // Database does not exist yet
     {
         if (!db.open()) {
             QMessageBox::critical(0, qApp->tr("Cannot open database"),

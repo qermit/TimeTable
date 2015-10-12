@@ -1,4 +1,4 @@
-QT += gui sql
+QT += gui sql widgets
 TEMPLATE        = lib
 CONFIG         += plugin
 

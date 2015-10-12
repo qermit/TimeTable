@@ -4,7 +4,7 @@ CONFIG += debug
 DESTDIR = ../build/bin
 OBJECTS_DIR += ../build/bin
 
-QT += core gui sql
+QT += core gui sql widgets
 
 HEADERS   = database.h \
             mainwindow.h \

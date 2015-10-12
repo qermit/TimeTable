@@ -2,6 +2,7 @@
 #define EXPORTDIALOG_H
 
 #include <QtGui>
+#include <QtWidgets>
 
 class NCReport;
 
